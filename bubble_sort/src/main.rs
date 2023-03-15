@@ -7,15 +7,15 @@ fn main() {
     number_bubble_sort(&mut number_vec);
     println!("number_vec排序后：{:?}",number_vec);
 
-    let mut char_vec = vec!["A", "C","*","F"];
+    let mut generic_number_vec = vec![8, 9, -4, 56, 79, -12, -5, 2, 0];
+    let mut generic_char_vec = vec!["A", "C","*","F"];
+    println!("generic_number_vec排序前: {:?}",generic_number_vec);
+    bubble_sort(&mut generic_number_vec);
+    println!("generic_number_vec排序后：{:?}",generic_number_vec);
 
-    println!("number_vec排序前: {:?}",number_vec);
-    bubble_sort(&mut number_vec);
-    println!("number_vec排序后：{:?}",number_vec);
-
-    println!("char_vec排序前: {:?}",char_vec);
-    bubble_sort(&mut char_vec);
-    println!("char_vec排序后：{:?}",char_vec);
+    println!("generic_char_vec排序前: {:?}",generic_char_vec);
+    bubble_sort(&mut generic_char_vec);
+    println!("generic_char_vec排序后：{:?}",generic_char_vec);
 
 }
 
