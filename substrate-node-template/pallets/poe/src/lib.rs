@@ -10,6 +10,13 @@
 
 pub use pallet::*;
 
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
+
 #[frame_support::pallet]
 pub mod pallet {
 	use frame_support::pallet_prelude::*;
@@ -45,9 +52,14 @@ pub mod pallet {
 	#[pallet::error]
 	pub enum Error<T> {
 		ProofAlreadyExist,
-		ClaimNotExist,
-		NotClaimOwner,
 		ProofTooLong,
+		ClaimNotExist,
+		ClaimIsExpired,
+		ClaimIsTransferred,
+		NotClaimOwner,
+		NewOwnerIsSameAsOldOwner,
+		NewOwnerIsNone,
+		NewOwnerIsNotExist,
 	}
 
 	#[pallet::hooks]
@@ -86,6 +98,8 @@ pub mod pallet {
 
 			let bounded_claim = BoundedVec::<u8, T::MaxClaimLength>::try_from(claim.clone()).map_err(|_| Error::<T>::ProofTooLong)?;	// 确保长度不超过最大长度
 
+			ensure!(Proofs::<T>::contains_key(&bounded_claim), Error::<T>::ClaimNotExist);	// 确保存证没有被撤销
+
 			let (owner, _) = Proofs::<T>::get(&bounded_claim).ok_or(Error::<T>::ClaimNotExist)?;	// 确保存在
 
 			ensure!(sender == owner, Error::<T>::NotClaimOwner);	// 确保是所有者
@@ -111,6 +125,8 @@ pub mod pallet {
 			let (owner, block_number) = Proofs::<T>::get(&bounded_claim).ok_or(Error::<T>::ClaimNotExist)?;	// 确保存在
 
 			ensure!(sender == owner, Error::<T>::NotClaimOwner);	// 确保是所有者
+
+			ensure!(sender != dest, Error::<T>::NewOwnerIsSameAsOldOwner);	// 确保新旧所有者不一样
 
 			Proofs::<T>::insert(&bounded_claim, (dest.clone(), block_number));	// 更新数据
 
