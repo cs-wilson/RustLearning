@@ -1,3 +1,3 @@
 # Kittes Test Result
 
-![test kittes](kitties/pallets/kitties/images/test.png)
+![compile and test kitties](kitties/pallets/kitties/images/compile_and_test.png)
