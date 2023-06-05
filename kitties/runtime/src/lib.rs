@@ -6,6 +6,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+use frame_support::PalletId;
 use pallet_grandpa::AuthorityId as GrandpaId;
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -27,7 +28,7 @@ use sp_version::RuntimeVersion;
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		ConstU128, ConstU32, ConstU64, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo,
+		ConstU128, ConstU32, ConstU64, ConstU8, KeyOwnerProofSystem, Randomness as OtherRandomness, StorageInfo,
 	},
 	weights::{
 		constants::{
@@ -278,10 +279,18 @@ impl pallet_template::Config for Runtime {
 //impl your pallets Config for Runtime
 impl pallet_insecure_randomness_collective_flip::Config for Runtime {}
 
+parameter_types! {
+	pub const KittyPalletId: PalletId = PalletId(*b"py/kitty");
+	pub const KittyPrice: Balance = EXISTENTIAL_DEPOSIT * 10;
+}
+
 //Configure the pallet-kitties in pallets/kitties.
 impl pallet_kitties::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Randomness = Randomness;
+	type Currency = Balances;
+	type KittyPrice = KittyPrice;
+	type PalletId = KittyPalletId;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

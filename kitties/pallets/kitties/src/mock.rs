@@ -19,7 +19,7 @@ frame_support::construct_runtime!(
 	{
 		System: frame_system,
 		KittiesModule: pallet_kitties,
-		KittyRandomness: pallet_insecure_randomness_collective_flip,
+		Randomness: pallet_insecure_randomness_collective_flip,
 	}
 );
 
@@ -52,7 +52,11 @@ impl frame_system::Config for Test {
 
 impl pallet_kitties::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	type KittyRandomness = KittyRandomness;
+	type Randomness = Randomness;
+	type Currency = Balances;
+	type KittyPrice = KittyPrice;
+	type PalletId = KittyPalletId;
+
 }
 
 impl pallet_insecure_randomness_collective_flip::Config for Test {}
