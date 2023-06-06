@@ -148,3 +148,44 @@ fn it_works_for_transfer() {
 
 	});
 }
+
+#[test]
+//test sale kitty
+fn it_works_for_sale(){
+	new_test_ext().execute_with(|| {
+		let kitty_id = 0;
+		let account_id = 1;
+
+		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id)));
+		assert_eq!(KittiesModule::kitty_owner(kitty_id), Some(account_id));
+		assert_eq!(KittiesModule::kitty_on_sale(kitty_id), None);
+
+		assert_ok!(KittiesModule::sale(
+			RuntimeOrigin::signed(account_id),
+			kitty_id)
+		);
+
+		assert_eq!(KittiesModule::kitty_on_sale(kitty_id), Some(()));
+
+		System::assert_last_event(
+			Event::KittyOnSale{
+				who: account_id,
+				kitty_id: kitty_id,
+			}.into()
+		);
+
+
+
+
+	});
+}
+
+#[test]
+//test buy kitty
+fn it_works_for_buy(){
+	new_test_ext().execute_with(|| {
+
+	});
+}
+
+

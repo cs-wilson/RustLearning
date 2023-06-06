@@ -24,9 +24,14 @@ pub mod pallet {
 	pub type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 	#[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, Default, TypeInfo, MaxEncodedLen)]
+	// pub struct Kitty{
+	// 	pub dna: [u8; 16],
+	// 	pub name: [u8; 4],
+	// }
 	pub struct Kitty(pub [u8; 16]);
 
 	#[pallet::pallet]
+
 	pub struct Pallet<T>(_);
 
 	#[pallet::config]
