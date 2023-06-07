@@ -102,7 +102,8 @@ pub mod pallet {
 		TransferToSelf,
 		AlreadyOnSale,
 		NoOwner,
-		NotOnSale
+		NotOnSale,
+		NotEnoughBalance
 	}
 
 
@@ -131,6 +132,7 @@ pub mod pallet {
 		#[pallet::call_index(1)]
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
 		pub fn breed(origin: OriginFor<T>, kitty_id_1: KittyIndex, kitty_id_2: KittyIndex) -> DispatchResult {
+
 			let who = ensure_signed(origin)?;
 
 			ensure!(kitty_id_1 != kitty_id_2, Error::<T>::SameKittyId);
@@ -188,7 +190,7 @@ pub mod pallet {
 			Self::kitties(kitty_id).ok_or::<DispatchError>(Error::<T>::InvalidKittyId.into())?;
 
 			ensure!(Self::kitty_owner(kitty_id) == Some(who.clone()), Error::<T>::NotOwner);
-			ensure!(Self::kitty_on_sale(kitty_id).is_some(), Error::<T>::AlreadyOnSale);
+			ensure!(Self::kitty_on_sale(kitty_id).is_none(), Error::<T>::AlreadyOnSale);
 
 			<KittyOnSale<T>>::insert(kitty_id, ());
 			Self::deposit_event(Event::KittyOnSale { who, kitty_id });
@@ -210,6 +212,8 @@ pub mod pallet {
 			let price = T::KittyPrice::get();
 			// T::Currency::reserve(&who, price)?;
 			// T::Currency::unreserve(&owner, price);
+
+			ensure!(T::Currency::free_balance(&who) >= price, Error::<T>::NotEnoughBalance);
 			T::Currency::transfer(&who, &owner, price, ExistenceRequirement::KeepAlive)?;
 
 			KittyOwner::<T>::insert(kitty_id, &who);
