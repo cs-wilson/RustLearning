@@ -1,4 +1,4 @@
-use crate::{mock::*, Error, Event};
+use crate::{mock::*, Error, Event, KittyName};
 use frame_support::{assert_noop, assert_ok, pallet_prelude::DispatchResultWithPostInfo};
 
 fn init_balance(account: AccountId, balance: Balance) -> DispatchResultWithPostInfo {
@@ -11,13 +11,14 @@ fn it_works_for_create() {
 	new_test_ext().execute_with(|| {
 		let kitty_id = 0;
 		let account_id = 1;
+		let KittyName = *b"testtest";
 
 		//deposit to account_id
 		assert_ok!(init_balance(account_id, 1000_000));
 
 		assert_eq!(KittiesModule::next_kitty_id(), kitty_id);
 
-		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id)));
+		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id),KittyName));
 		assert_eq!(KittiesModule::next_kitty_id(), kitty_id + 1);
 		assert_eq!(KittiesModule::kitties(kitty_id).is_some(), true);
 
@@ -33,7 +34,7 @@ fn it_works_for_create() {
 
 		crate::NextKittyId::<Test>::set(crate::KittyIndex::max_value());
 		assert_noop!(
-			KittiesModule::create(RuntimeOrigin::signed(account_id)),
+			KittiesModule::create(RuntimeOrigin::signed(account_id), KittyName),
 			Error::<Test>::InvalidKittyId
 		);
 	});
@@ -45,29 +46,31 @@ fn it_works_for_breed() {
 	new_test_ext().execute_with(|| {
 		let kitty_id = 0;
 		let account_id = 1;
+		let KittyName = *b"testtest";
 
 		//deposit to account_id
 		assert_ok!(init_balance(account_id, 1000_000));
 
 		assert_noop!(
-			KittiesModule::breed(RuntimeOrigin::signed(account_id), kitty_id, kitty_id),
+			KittiesModule::breed(RuntimeOrigin::signed(account_id), kitty_id, kitty_id, KittyName),
 			Error::<Test>::SameKittyId
 		);
 
 		assert_noop!(
-			KittiesModule::breed(RuntimeOrigin::signed(account_id), kitty_id, kitty_id + 1),
+			KittiesModule::breed(RuntimeOrigin::signed(account_id), kitty_id, kitty_id + 1, KittyName),
 			Error::<Test>::InvalidKittyId
 		);
 
-		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id)));
-		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id)));
+		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id), KittyName));
+		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id), KittyName));
 
 		assert_eq!(KittiesModule::next_kitty_id(), kitty_id + 2);
 
 		assert_ok!(KittiesModule::breed(
 			RuntimeOrigin::signed(account_id),
 			kitty_id,
-			kitty_id + 1
+			kitty_id + 1,
+			KittyName
 		));
 
 		let breed_kitty_id = kitty_id + 2;
@@ -101,10 +104,11 @@ fn it_works_for_transfer() {
 		let kitty_id = 0;
 		let account_id = 1;
 		let recipient_id = 2;
+		let KittyName = *b"testtest";
 
 		assert_ok!(init_balance(account_id, 1000_000));
 
-		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id)));
+		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id), KittyName));
 		assert_eq!(KittiesModule::kitty_owner(kitty_id), Some(account_id));
 
 		assert_noop!(
@@ -166,10 +170,11 @@ fn it_works_for_sale(){
 	new_test_ext().execute_with(|| {
 		let kitty_id = 0;
 		let account_id = 1;
+		let KittyName = *b"testtest";
 
 		assert_ok!(init_balance(account_id, 1000_000));
 
-		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id)));
+		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id), KittyName));
 		assert_eq!(KittiesModule::kitty_owner(kitty_id), Some(account_id));
 		assert_eq!(KittiesModule::kitty_on_sale(kitty_id), None);
 
@@ -196,6 +201,7 @@ fn it_works_for_buy(){
 		let kitty_id = 0;
 		let account_id1 = 1;
 		let account_id2 = 2;
+		let KittyName = *b"testtest";
 
 		assert_ok!(init_balance(account_id1, 1000_000));
 
@@ -204,7 +210,7 @@ fn it_works_for_buy(){
 			Error::<Test>::InvalidKittyId
 		);
 
-		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id1)));
+		assert_ok!(KittiesModule::create(RuntimeOrigin::signed(account_id1), KittyName));
 		assert_noop!(
 			KittiesModule::buy(RuntimeOrigin::signed(account_id1), kitty_id),
 			Error::<Test>::TransferToSelf

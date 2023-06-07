@@ -5,6 +5,8 @@ pub use pallet::*;
 #[cfg(test)]
 mod mock;
 
+mod migrations;
+
 #[cfg(test)]
 mod tests;
 
@@ -19,19 +21,23 @@ pub mod pallet {
 	};
 	use sp_runtime::traits::AccountIdConversion;
 	use sp_io::hashing::blake2_128;
+	use crate::migrations::select_migration;
+	pub use crate::migrations::current_version::*;
+
 
 	pub type KittyIndex = u32;
 	pub type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
-	#[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, Default, TypeInfo, MaxEncodedLen)]
+	// #[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, Default, TypeInfo, MaxEncodedLen)]
 	// pub struct Kitty{
 	// 	pub dna: [u8; 16],
 	// 	pub name: [u8; 4],
 	// }
-	pub struct Kitty(pub [u8; 16]);
+
+	// const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
 	#[pallet::pallet]
-
+	#[pallet::storage_version(STORAGE_VERSION)]
 	pub struct Pallet<T>(_);
 
 	#[pallet::config]
@@ -106,17 +112,25 @@ pub mod pallet {
 		NotEnoughBalance
 	}
 
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_runtime_upgrade() -> Weight {
+			select_migration::<T>()
+		}
+	}
+
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::call_index(0)]
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
-		pub fn create(origin: OriginFor<T>) -> DispatchResult {
+		pub fn create(origin: OriginFor<T>, name: KittyName) -> DispatchResult {
 
 			let who = ensure_signed(origin)?;
 
 			let kitty_id = Self::get_next_kitty_id()?;
-			let kitty = Kitty(Self::random_value(&who));
+			let dna = Self::random_value(&who);
+			let kitty = Kitty { dna, name };
 
 			let price = T::KittyPrice::get();
 			// T::Currency::reserve(&who, price)?;
@@ -131,7 +145,7 @@ pub mod pallet {
 
 		#[pallet::call_index(1)]
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
-		pub fn breed(origin: OriginFor<T>, kitty_id_1: KittyIndex, kitty_id_2: KittyIndex) -> DispatchResult {
+		pub fn breed(origin: OriginFor<T>, kitty_id_1: KittyIndex, kitty_id_2: KittyIndex, name: KittyName) -> DispatchResult {
 
 			let who = ensure_signed(origin)?;
 
@@ -145,12 +159,12 @@ pub mod pallet {
 			let kitty_2 = Self::kitties(kitty_id_2).ok_or(Error::<T>::InvalidKittyId)?;
 
 			let selector = Self::random_value(&who);
-			let mut data = [0u8; 16];
-			for i in 0..kitty_1.0.len() {
-				data[i] = (kitty_1.0[i] & selector[i]) | (kitty_2.0[i] & !selector[i]);
-			}
+			let dna = [0u8; 16];
+			// for i in 0..kitty_1.0.len() {
+			// 	data[i] = (kitty_1.0[i] & selector[i]) | (kitty_2.0[i] & !selector[i]);
+			// }
 
-			let kitty = Kitty(data);
+			let kitty = Kitty { dna, name };
 			let price = T::KittyPrice::get();
 			// T::Currency::reserve(&who, price)?;
 			T::Currency::transfer(&who, &Self::get_account_id(), price, ExistenceRequirement::KeepAlive)?;
