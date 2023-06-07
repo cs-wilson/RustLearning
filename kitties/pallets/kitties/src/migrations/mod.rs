@@ -33,10 +33,6 @@ pub fn select_migration<T: Config>() -> Weight {
 	Weight::zero()
 }
 
-fn set_current_version<T: Config>(version: u16) {
-	StorageVersion::new(version);
-}
-
 
 // pub fn v0_migrate_to_v1<T: Config>() -> Weight {
 
