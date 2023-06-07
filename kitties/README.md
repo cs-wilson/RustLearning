@@ -25,5 +25,7 @@
 ![compile and test kitties](./images/migration_tp_v2.png)
 3. v0-v1
 ![compile and test kitties](./images/beforeMigration.png)
-4. v1-v2
+4. v0-v2
 ![compile and test kitties](./images/migration_v2%20success.png)
+5. v1-v2
+![compile and test kitties](./images/kitty_v1_to_v2.png)
