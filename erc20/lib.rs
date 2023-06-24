@@ -28,6 +28,29 @@ mod erc20 {
         value: Balance,
     }
 
+    #[ink(event)]
+    pub struct Approval {
+        #[ink(topic)]
+        owner: AccountId,
+        #[ink(topic)]
+        spender: AccountId,
+        value: Balance,
+    }
+
+    #[ink(event)]
+    pub struct Burn {
+        #[ink(topic)]
+        from: AccountId,
+        value: Balance,
+    }
+
+    #[ink(event)]
+    pub struct Mint {
+        #[ink(topic)]
+        to: AccountId,
+        value: Balance,
+    }
+
     type Result<T> = core::result::Result<T, Error>;
 
     impl Erc20 {
@@ -62,12 +85,14 @@ mod erc20 {
         pub fn transfer(&mut self, to: AccountId, value: Balance) -> Result<()> {
             let from = self.env().caller();
             self.transfer_from_to(from, to, value)
+
         }
 
         #[ink(message)]
         pub fn approve(&mut self, spender: AccountId, value: Balance) -> Result<()> {
             let owner = self.env().caller();
             self.allowances.insert((owner, spender), &value);
+            self.env().emit_event(Approval { owner, spender, value });
             Ok(())
         }
 
@@ -91,9 +116,7 @@ mod erc20 {
             }
             self.balances.insert(from, &(from_balance - value));
             self.balances.insert(to, &(to_balance + value));
-
             self.env().emit_event(Transfer { from, to, value });
-
             Ok(())
         }
 
@@ -104,6 +127,7 @@ mod erc20 {
             let to_balance = self.balance_of(to);
             self.balances.insert(to, &(to_balance + value));
             self.total_supply += value;
+            self.env().emit_event(Mint { to, value });
         }
 
         #[ink(message)]
@@ -114,6 +138,7 @@ mod erc20 {
             assert!(from_balance >= value, "Not enough balance to burn");
             self.balances.insert(from, &(from_balance - value));
             self.total_supply -= value;
+            self.env().emit_event(Burn { from, value });
         }
 
         #[ink(message)]
@@ -123,3 +148,4 @@ mod erc20 {
 
     }
 }
+
