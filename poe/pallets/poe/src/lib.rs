@@ -9,6 +9,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub use pallet::*;
+pub use weights::WeightInfo;
 
 #[cfg(test)]
 mod mock;
@@ -19,12 +20,14 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
+pub mod weights;
 
 #[frame_support::pallet]
 pub mod pallet {
 	pub use frame_support::pallet_prelude::*;
 	pub use frame_system::pallet_prelude::*;
 	pub use sp_std::prelude::*;
+	use super::WeightInfo;
 
 	// 数据结构
 	#[pallet::pallet]
@@ -36,6 +39,7 @@ pub mod pallet {
 		#[pallet::constant]
 		type MaxClaimLength: Get<u32>; // 最大长度
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>; // 事件
+		type WeightInfo: WeightInfo; // 权重
 	}
 
 	// 数据结构
@@ -73,7 +77,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 
 		// 创建存证
-		#[pallet::weight(0)]
+		#[pallet::weight(T::WeightInfo::create_claim(claim.len() as u32))]
 		pub fn create_claim(
 			origin: OriginFor<T>,
 			claim: Vec<u8>,
@@ -92,7 +96,7 @@ pub mod pallet {
 		}
 
 		// 撤销存证
-		#[pallet::weight(0)]
+		#[pallet::weight(T::WeightInfo::revoke_claim(claim.len() as u32))]
 		pub fn revoke_claim(
 			origin: OriginFor<T>,
 			claim: Vec<u8>,
@@ -115,7 +119,7 @@ pub mod pallet {
 		}
 
 		// 转移存证
-		#[pallet::weight(0)]
+		#[pallet::weight(T::WeightInfo::transfer_claim(claim.len() as u32))]
 		pub fn transfer_claim(
 			origin: OriginFor<T>,
 			claim: Vec<u8>,
