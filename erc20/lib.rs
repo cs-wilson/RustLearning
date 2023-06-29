@@ -149,3 +149,43 @@ mod erc20 {
     }
 }
 
+#[cfg(not(feature = "ink-experimental-engine"))]
+#[cfg(test)]
+mod tests {
+    use super::*;
+    // use ink_lang as ink;
+    use crate::erc20::Erc20;
+
+    type Event = <Erc20 as ::ink_reflect::ContractEnvBase>::Event;
+
+    #[ink::test]
+    fn constructor_works() {
+        let erc20 = Erc20::new(10000);
+        let accounts = ink_e2e::test::default_accounts::<ink_e2e::DefaultEnvironment>().expect("Cannot get accounts");
+        assert_eq!(erc20.total_supply(), 10000);
+        assert_eq!(erc20.balance_of(accounts.alice), 10000);
+    }
+
+    // #[ink::test]
+    // fn transfer_works() {
+    //     let mut erc20 = Erc20::new(100);
+    //     assert_eq!(erc20.balance_of(AccountId::from([0x01; 32])), 100);
+    //     assert_eq!(erc20.balance_of(AccountId::from([0x02; 32])), 0);
+    //     assert_eq!(erc20.transfer(AccountId::from([0x02; 32]), 50), Ok(()));
+    //     assert_eq!(erc20.balance_of(AccountId::from([0x01; 32])), 50);
+    //     assert_eq!(erc20.balance_of(AccountId::from([0x02; 32])), 50);
+    // }
+
+    // #[ink::test]
+    // fn transfer_from_works() {
+    //     let mut erc20 = Erc20::new(100);
+    //     assert_eq!(erc20.balance_of(AccountId::from([0x01; 32])), 100);
+    //     assert_eq!(erc20.balance_of(AccountId::from([0x02; 32])), 0);
+    //     assert_eq!(erc20.approve(AccountId::from([0x02; 32]), 50), Ok(()));
+    //     assert_eq!(erc20.transfer_from(AccountId::from([0x01; 32]), AccountId::from([0x02; 32]), 50), Ok(()));
+    //     assert_eq!(erc20.balance_of(AccountId::from([0x01; 32])), 50);
+    //     assert_eq!(erc20.balance_of(AccountId::from([0x02; 32])), 50);
+    // }
+
+}
+
