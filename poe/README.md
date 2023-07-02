@@ -13,3 +13,9 @@ https://github.com/cs-wilson/RustLearning/tree/main/poe/pallets/poe/src
 ![weight update ](./assets/createWithWeight.png)
 ![weight update ](./assets/revokeWIthWeight.png)
 ![weight update](./assets/transferWithWeight.png)
+
+
+## generagte chain spec file
+
+![poe-dev.json](./poe-dev.json)
+![poe-dev-raw.json](./poe-dev-raw.json)
